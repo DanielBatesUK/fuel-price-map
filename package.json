@@ -1,34 +1,37 @@
 {
-  "name": "express-template",
-  "version": "2.0.0",
-  "description": "Simple node.js express template",
+  "name": "my-fuel-finder-map",
+  "version": "0.0.1",
+  "description": "My fuel price map using the UK government's fuel-finder api",
   "main": "server.js",
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev-start": "node --env-file=.env --inspect=9229 server.js"
+    "dev-start": "node --env-file=.env server.js",
+    "db-build": "node scripts/database_build.js",
+    "dev-db-build": "node --env-file=.env scripts/database_build.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DanielBatesUK/express-template.git"
+    "url": "git+https://github.com/DanielBatesUK/fuel-price-map.git"
   },
   "keywords": [],
   "author": "Daniel Bates",
   "license": "GNU v3.0",
   "dependencies": {
+    "better-sqlite3": "^12.11.1",
     "cookie-parser": "^1.4.7",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
-    "got": "^14.6.6",
-    "multer": "2.1.1",
+    "got": "^15.0.5",
+    "multer": "2.2.0",
     "pug": "^3.0.4",
-    "uuid": "^13.0.0"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^10.1.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.4.0",
-    "prettier": "3.8.1"
+    "prettier": "3.9.4"
   }
 }

@@ -1,13 +1,295 @@
-*, *:before, *:after {
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  border: 0;
   box-sizing: border-box;
 }
 
-html {
+html,
+body {
   width: 100%;
   height: 100%;
-  }
-  
+  overflow: hidden;
+}
+
 body {
   font-family: monospace;
-  font-size: 1em;
+  font-size: 1rem;
+}
+
+svg,
+img {
+  vertical-align: top;
+}
+
+/* ==========================
+   Map
+   ========================== */
+
+#map {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100vh;
+  opacity: 0;
+  transition: opacity 1s ease-in;
+}
+
+#map::before {
+  content: "loading...";
+  font-size: 2rem;
+  color: silver;
+}
+
+#map.on {
+  opacity: 1;
+}
+
+/* ==========================
+   Station Popup
+   ========================== */
+
+div.station {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+div.station p {
+  margin: 0;
+}
+
+div.station div.station_name p {
+  padding-bottom: 4px;
+  color: #606060;
+  font:
+    800 1.33rem/1.33rem "Inter",
+    sans-serif;
+  text-transform: uppercase;
+}
+
+div.station div.address p {
+  padding-bottom: 6px;
+  color: #808080;
+  font:
+    300 0.66rem/0.66rem "Inter",
+    sans-serif;
+  text-transform: uppercase;
+}
+
+/* ==========================
+   Fuel Panel
+   ========================== */
+
+div.station div.type {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  font:
+    800 0.9rem/0.9rem "Inter",
+    sans-serif;
+  letter-spacing: 0.08em;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.25),
+    inset 0 2px 1px rgba(255, 255, 255, 0.18),
+    inset 0 -3px 3px rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+div.station div.type::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.12) 12%,
+    rgba(255, 255, 255, 0) 35%
+  );
+  pointer-events: none;
+}
+
+div.station div.type::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: 2;
+  border-radius: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+div.station div.fuelname,
+div.station div.price {
+  position: relative;
+  z-index: 3;
+}
+
+div.station div.fuelname {
+  padding: 16px;
+}
+
+/* ==========================
+   Fuel Colours
+   ========================== */
+
+div.station div.type.E10 {
+  background: linear-gradient(180deg, #63bb83 0%, #00913a 10%, #00812b 90%, #00551c 100%);
+}
+
+div.station div.type.E5 {
+  background: linear-gradient(180deg, #63bb83 0%, #00913a 10%, #00812b 70%, #f6d766 72%, #d9a91d 87%, #9d7200 100%);
+}
+
+div.station div.type.B7_STANDARD {
+  background: linear-gradient(180deg, #666666 0%, #3d3d3d 10%, #2b2b2b 90%, #111111 100%);
+}
+
+div.station div.type.B7_PREMIUM {
+  background: linear-gradient(180deg, #666666 0%, #3d3d3d 10%, #2b2b2b 70%, #f6d766 72%, #d9a91d 87%, #9d7200 100%);
+}
+
+/* ==========================
+   Price Display
+   ========================== */
+
+div.station div.price {
+  width: 84px;
+  margin: 4px 8px;
+  padding: 4px 8px;
+  text-align: right;
+  font:
+    400 2rem/2rem "VT323",
+    monospace;
+  font-variant-numeric: tabular-nums;
+  color: #ff3b3b;
+  text-shadow: 0 0 8px #c00000;
+  background: linear-gradient(180deg, #2b0000, #140000);
+  border: 1px solid #000;
+  border-radius: 2px;
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.08),
+    inset 0 -2px 2px rgba(0, 0, 0, 0.7);
+}
+
+/* ==========================
+   Leaflet Popup
+   ========================== */
+
+.leaflet-popup-content-wrapper {
+  background: #efefef;
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.leaflet-popup-content {
+  margin: 10px;
+}
+
+.leaflet-popup-tip {
+  background: #efefef;
+}
+
+/* ==========================
+   About
+   ========================== */
+
+.leaflet-control.infoControl {
+  cursor: pointer;
+  text-align: center;
+  width: 44px;
+  height: 44px;
+  color: #2196f3;
+  background: #ffffff;
+  padding: 4px;
+  border-radius: 4px;
+  background-clip: padding-box;
+}
+
+#about-panel {
+  position: absolute;
+  top: 10px;
+  right: 64px;
+  width: 320px;
+  max-width: calc(100vw - 74px);
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+  padding: 16px;
+  z-index: 1000;
+  transform: translateX(382px);
+  transition: transform 0.25s ease;
+}
+
+#about-panel h2 {
+  padding-bottom: 4px;
+  color: #606060;
+  font:
+    800 1.33rem/1.5rem "Inter",
+    sans-serif;
+  word-spacing: 2px;
+}
+
+#about-panel p {
+  padding-bottom: 8px;
+  color: #808080;
+  font:
+    300 0.66rem/0.85rem "Inter",
+    sans-serif;
+}
+
+#about-panel.open {
+  transform: translateX(0);
+}
+
+#about-panel a,
+#about-panel a:visited {
+  color: inherit;
+  text-decoration: underline;
+}
+
+#about-panel a:hover {
+  color: #404040;
+}
+
+/* ==========================
+   Centred
+   ========================== */
+
+.leaflet-control.centredControl {
+  cursor: pointer;
+  text-align: center;
+  width: 44px;
+  height: 44px;
+  color: #c0c0c0;
+  background: #ffffff;
+  padding: 4px;
+  border-radius: 4px;
+  background-clip: padding-box;
+}
+
+.leaflet-control[title="Keep centred"].on {
+  color: #000000;
+}
+
+.leaflet-control[title="Keep centred"].disabled {
+  opacity: 0.33;
+  cursor: not-allowed;
+  pointer-events: none;
 }

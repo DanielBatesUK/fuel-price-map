@@ -1,76 +1,129 @@
-# express-template
+# Fuel Price Map ⛽
 
-![GitHub package.json version](https://img.shields.io/github/package-json/v/DanielBatesUK/express-template) ![GitHub last commit](https://img.shields.io/github/last-commit/DanielBatesUK/express-template) ![GitHub repo file count](https://img.shields.io/github/directory-file-count/DanielBatesUK/express-template) ![GitHub repo size](https://img.shields.io/github/repo-size/DanielBatesUK/express-template) ![GitHub issues](https://img.shields.io/github/issues-raw/DanielBatesUK/express-template)
+A lightweight UK-focused fuel station finder built with Node.js, SQLite, and Leaflet.
 
-![GitHub forks](https://img.shields.io/github/forks/DanielBatesUK/express-template?style=social)
+[https://www.fuelpricemap.co.uk](https://www.fuelpricemap.co.uk)
 
-![Twitter Follow](https://img.shields.io/twitter/follow/DanielBatesUK?style=social)
+---
 
-## Description
+## 🚀 Overview
 
-Simple node.js express server template.
+Fuel Price Map is a simple but powerful web application for locating fuel stations across the UK. It combines a Node.js backend, a SQLite database, and an interactive Leaflet map restricted to UK boundaries for a focused and smooth user experience.
 
-## Installation
+---
 
-### Create repo from template
+## ✨ Features
 
-Goto <https://github.com/DanielBatesUK/express-template/generate> and create new repo from the template.
+- 🗺️ Interactive UK-only map (Leaflet + OpenStreetMap)
+- ⛽ Fuel station lookup from SQLite database
+- 🔒 OAuth2 token management (access + refresh tokens)
+- ⚡ Cached token system with request deduplication
+- 📍 Map bounded to UK with mobile-friendly padding
+- 🧠 Safe SQL queries using parameterised statements
+- 🧩 Clean separation of API, services, and frontend
 
-### Clone your repo
+---
 
-Clone the new repo to your system. Replacing `YOUR-USERNAME` & `YOUR-REPO-NAME` where appropriate.
+## 🧱 Tech Stack
 
-```Shell
-git clone https://github.com/YOUR-USERNAME/YOUR-REPO-NAME
-```
+- **Backend:** Node.js (ES Modules)
+- **Database:** SQLite (better-sqlite3)
+- **Frontend:** Leaflet.js
+- **Map Tiles:** OpenStreetMap
+- **Auth:** OAuth2-style token flow
+- **HTTP Layer:** Custom request wrapper
 
-### Install dependencies
+---
 
-Once cloned, goto the project's root directory and install required dependencies from npm.
+## 🔐 Authentication Flow
 
-```Shell
+Fuel Finder uses an OAuth2-style token system:
+
+- Access tokens are cached in memory
+- Refresh tokens are used when available
+- Only one token request runs at a time
+- Automatic token regeneration on expiry
+
+---
+
+## ⚙️ Setup
+
+You must have a client id and client secret for the UK government's Fuel Finder Public API. For more information [look here](https://www.developer.fuel-finder.service.gov.uk/public-api).
+
+### 1. Install dependencies
+
+```bash
 npm install
 ```
 
-## Run
+### 2. Environment variables required
 
-You can then start the app with either:
+```
+FUEL_PRICE_MAP_PORT=3000
+FUEL_PRICE_MAP_SESSION_SECRET="your_session_secret"
+FUEL_PRICE_MAP_DATABASE_PATH="/path/to/database.db"
+FUEL_FINDER_API_CLIENT_ID="your_fuel_finder_api_client_id"
+FUEL_FINDER_API_CLIENT_SECRET="your_fuel_finder_api_client_secret"
+```
 
-```Shell
+### 4. Initialise and build the database
+
+```bash
+npm run db-build
+```
+
+or if using .env in root directory
+
+```bash
+npm run dev-db-build
+```
+
+### 3. Run the server
+
+```bash
 node server.js
 ```
 
-or
+or if using .env in root directory
 
-```Shell
-npm start
+```bash
+npm run dev-start
 ```
 
-### Access via browser
+---
 
-```Shell
-http://localhost:3000
-```
+## 🧠 Design Notes
 
-> Hello World!
+- Token logic is centralised to prevent duplicate refresh calls
+- Prepared statements used for all DB queries
+- Map is intentionally constrained for UX clarity
+- Separation of concerns kept lightweight and maintainable
 
-## Credits
+---
 
-### Dependencies
+## 🛠️ Future Improvements
 
-- cookie-parser - [GitHub](https://github.com/expressjs/cookie-parser) [npm](https://www.npmjs.com/package/cookie-parser)
-- express - [GitHub](https://github.com/expressjs/express) [npm](https://www.npmjs.com/package/express)
-- pug - [GitHub](https://github.com/pugjs/pug/tree/master/packages/pug) [npm](https://www.npmjs.com/package/pug)
+- Persistent token storage (survives server restarts)
+- Station clustering for dense regions
+- Filtering by fuel type and price
+- Query caching for performance
+- Progressive Web App (PWA) support
+
+---
+
+## 📄 License
+
+- This project is [GNU v3.0](https://github.com/DanielBatesUK/fuel-finder/blob/81b90a854cba461336668c46c16b02f595b5d20a/LICENSE) licensed.
+
+---
 
 ## Author
 
 ### **Daniel Bates**
 
-- Github: [@DanielBatesUK](https://github.com/DanielBatesUK)
-- Twitter: [@DanielBatesUK](https://twitter.com/DanielBatesUK)
+- Website: [danielbates.co.uk](https://danielbates.co.uk)
+- GitHub: [@DanielBatesUK](https://github.com/DanielBatesUK)
+- X/Twitter: [@DanielBatesUK](https://twitter.com/DanielBatesUK)
+- BlueSky: [@danielbates.co.uk](https://bsky.app/profile/danielbates.co.uk)
+- Mastodon: [@DanielBatesUK](https://mastodon.social/@DanielBatesUK)
 - LinkedIn: [@DanielBatesUK](https://linkedin.com/in/DanielBatesUK)
-
-## License
-
-- Copyright © 2023 [Daniel Bates](https://github.com/DanielBatesUK).
-- This project is [GNU v3.0](https://github.com/DanielBatesUK/express-template/blob/fb095588f22edde7a57a6af9f4cee60bd0f5aa96/LICENSE) licensed.

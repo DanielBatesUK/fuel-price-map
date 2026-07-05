@@ -1,7 +1,243 @@
 doctype html
 html(lang='en')
   include head.pug
-  +head("Express-Template - Index")
+  +head("Fuel Price Map")
   body
-    p.
-      Hello World!
+    div#map
+    #about-panel
+      h2 FUEL PRICE MAP
+      p Displays UK fuel prices using data from the UK Government's #[a(href="https://www.developer.fuel-finder.service.gov.uk/public-api") Fuel Finder Public API]. 
+      p Built with: #[br]#[a(href="https://nodejs.org/") Node.js]#[br]#[a(href="https://expressjs.com/") Express]#[br]#[a(href="https://sqlite.org/") SQLite]#[br]#[a(href="https://leafletjs.com/") Leaflet]
+      p Webpage by #[a(href="https://danielbates.co.uk") Daniel Bates]
+      p View the source on #[a(href="https://github.com/DanielBatesUK/fuel-price-map", target="_blank") GitHub]
+    script.
+      // Map Div
+      const mapDiv = document.getElementById("map");
+
+      // State
+      let cLat = 51.5071514;
+      let cLng = -0.1280075;
+      const ukBounds = L.latLngBounds(
+        [49.8, -8.6],
+        [60.9, 1.8]
+      ).pad(0.2);
+      let keepCentred = true;
+      let centredDisabled = false;
+      let programmaticMove = false;
+      const stationMarkers = new Map();
+      const stationPriceCache = new Map();
+
+
+      // Initialise Map
+      const map = L.map("map", {
+        minZoom: 6,
+        maxBounds: ukBounds,
+        maxBoundsViscosity: 1.0
+      }).setView([cLat, cLng], 14);
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 17,
+        minZoom: 6,
+        attribution:
+          '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+
+
+      // Marker stores
+      const stationLayer = L.layerGroup().addTo(map);
+      const locationLayer = L.layerGroup().addTo(map);
+
+
+      // Info control (for about panel)
+      const infoControl = L.control({ position: "topright" });
+      infoControl.onAdd = function () {
+        const div = L.DomUtil.create("div", "leaflet-bar leaflet-control infoControl");
+        div.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor"><path d="M440-280h80v-240h-80v240Zm68.5-331.5Q520-623 520-640t-11.5-28.5Q497-680 480-680t-28.5 11.5Q440-657 440-640t11.5 28.5Q463-600 480-600t28.5-11.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>`;
+        div.title = "About Fuel Price Map";
+        L.DomEvent.disableClickPropagation(div);
+        div.addEventListener("click", () => {
+          document.getElementById("about-panel").classList.toggle("open");
+        });
+        return div;
+      };
+      infoControl.addTo(map);
+
+
+      // Center control
+      const centredControl = L.control({ position: "bottomright" });
+      centredControl.onAdd = function () {
+        const div = L.DomUtil.create("div", "leaflet-bar leaflet-control centredControl on");
+        div.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor"><path d="M440-42v-80q-125-14-214.5-103.5T122-440H42v-80h80q14-125 103.5-214.5T440-838v-80h80v80q125 14 214.5 103.5T838-520h80v80h-80q-14 125-103.5 214.5T520-122v80h-80Zm238-240q82-82 82-198t-82-198q-82-82-198-82t-198 82q-82 82-82 198t82 198q82 82 198 82t198-82Zm-311-85q-47-47-47-113t47-113q47-47 113-47t113 47q47 47 47 113t-47 113q-47 47-113 47t-113-47Zm169.5-56.5Q560-447 560-480t-23.5-56.5Q513-560 480-560t-56.5 23.5Q400-513 400-480t23.5 56.5Q447-400 480-400t56.5-23.5ZM480-480Z"/></svg>`;
+        div.title = "Keep centred";
+        L.DomEvent.disableClickPropagation(div);
+        div.addEventListener("click", () => {
+          keepCentred = true;
+          centredControlState("on");
+          panMap(cLat, cLng);
+        });
+        return div;
+      };
+      centredControl.addTo(map);
+
+
+      // Update center control state
+      function centredControlState(state) {
+        const div = document.querySelector(
+          '.leaflet-control[title="Keep centred"]'
+        );
+        if (!div) return;
+        div.classList.remove("on");
+        if (state === "on") div.classList.add("on");
+        if (state === "disabled") div.classList.add("disabled");
+      }
+
+
+      // Pan Map
+      function panMap(lat, lng) {
+        programmaticMove = true;
+        map.panTo([lat, lng]);
+      }
+
+
+      // Map move event
+      map.on("moveend", () => {
+        loadStations();
+        if (programmaticMove) {
+          programmaticMove = false;
+          return;
+        }
+        keepCentred = false;
+        centredControlState("off");
+      });
+
+
+      // Location tracking
+      let locationMarker = null;
+      function startLocationTracking() {
+        if (!navigator.geolocation) {
+          centredDisabled = true;
+          centredControlState("disabled");
+          return;
+        }
+        navigator.geolocation.watchPosition(
+          (position) => {
+            cLat = position.coords.latitude;
+            cLng = position.coords.longitude;
+            if (!locationMarker) {
+              locationMarker = L.marker([cLat, cLng]).addTo(locationLayer);
+            } else {
+              locationMarker.setLatLng([cLat, cLng]);
+            }
+            if (keepCentred && !centredDisabled) {
+              panMap(cLat, cLng);
+            }
+          },
+          (error) => {
+            centredDisabled = true;
+            centredControlState("disabled");
+            console.warn("Geolocation error:", error);
+          },
+          {
+            enableHighAccuracy: true,
+            maximumAge: 5000,
+            timeout: 10000
+          }
+        );
+      }
+
+
+      // Fuel type formatting
+      const fuelNames = {
+        E10: "Unleaded",
+        E5: "Premium Unleaded",
+        B7_STANDARD: "Diesel",
+        B7_PREMIUM: "Premium Diesel",
+        HVO: "HVO Diesel"
+      };
+      const fuelOrder = ["E10", "E5", "B7_STANDARD", "B7_PREMIUM", "HVO"];
+
+
+      // Format fuel type prices
+      function formatFuelPrices(prices) {
+        return fuelOrder
+          .map((type) => prices.find((p) => p.fuel_type === type))
+          .filter(Boolean)
+          .map(
+            (fuel) =>
+              `<div class="type ${fuel.fuel_type}">
+                <div class="fuelname"><p>${fuelNames[fuel.fuel_type]}</p></div>
+                <div class="price"><p>${fuel.price}</p></div>
+              </div>`
+          )
+          .join("");
+      }
+
+
+      // Station markers
+      async function loadStations() {
+        const bounds = map.getBounds();
+        const response = await fetch(
+          `/api/stations?north=${bounds.getNorth()}&east=${bounds.getEast()}&south=${bounds.getSouth()}&west=${bounds.getWest()}`
+        );
+        const json = await response.json();
+        const visible = new Set();
+        for (const station of json.data) {
+          visible.add(station.node_id);
+          let marker = stationMarkers.get(station.node_id);
+          if (!marker) {
+            const color =
+              Number(station.temporary_closure) === 0 ? "#800000" : "#202020";
+            const fillColor =
+              Number(station.temporary_closure) === 0 ? "#ff0000" : "#404040";
+            marker = L.circleMarker([station.latitude, station.longitude], {
+              radius: 10,
+              color,
+              fillColor,
+              fillOpacity: 0.66
+            }).addTo(stationLayer);
+            marker.on("click", async () => {
+              let prices;
+              // Cache prices
+              if (stationPriceCache.has(station.node_id)) {
+                prices = stationPriceCache.get(station.node_id);
+              } else {
+                const res = await fetch(
+                  `/api/prices?node_id=${station.node_id}`
+                );
+                const json = await res.json();
+                prices = json.data;
+                stationPriceCache.set(station.node_id, prices);
+              }
+              marker
+                .bindPopup(
+                  `<div class="station">
+                    <div class="station_name"><p>${station.brand_name}</p></div>
+                    <div class="address">
+                      <p>${station.address_line_1}, ${station.city}, ${station.postcode}</p>
+                    </div>
+                    ${formatFuelPrices(prices)}
+                  </div>`
+                )
+                .openPopup();
+            });
+            stationMarkers.set(station.node_id, marker);
+          } else {
+            marker.setLatLng([station.latitude, station.longitude]);
+          }
+        }
+        // remove off-screen markers
+        for (const [id, marker] of stationMarkers) {
+          if (!visible.has(id)) {
+            stationLayer.removeLayer(marker);
+            stationMarkers.delete(id);
+            stationPriceCache.delete(id);
+          }
+        }
+      }
+
+
+      // Onload initialisation
+      window.onload = async () => {
+        startLocationTracking();
+        loadStations();
+        mapDiv.classList.add("on");
+      };
