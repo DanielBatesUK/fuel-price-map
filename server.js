@@ -28,6 +28,8 @@ import { v4 as uuidV4 } from "uuid";
 // My Imports
 import logTime from "./lib/log_time.js";
 import updateStations from "./lib/update_stations.js";
+import databaseInitialised from "./lib/database_initialised.js";
+import databaseBuild from "./scripts/database_build.js";
 
 // ################################################################################################
 
@@ -44,7 +46,24 @@ if (process.DEBUGPORT) console.log(`${logTime()} Debug on port ${process.DEBUGPO
 
 // ################################################################################################
 
-// Database updates
+// Database check
+let dbInit;
+try {
+  console.log(`${logTime("databaseCheck")} Checking database...`);
+  dbInit = databaseInitialised();
+  console.log(`${logTime("databaseCheck")} Database initialised: ${dbInit}`);
+  if (!dbInit) {
+    console.log(`${logTime("databaseCheck")} Running database build...`);
+    await databaseBuild();
+  }
+} catch (error) {
+  console.error(`${logTime("databaseCheck")} Error:`, error);
+  process.exit(1);
+}
+
+// ################################################################################################
+
+// Update database
 // Stations
 const stationsUpdateIntervalTime = 1 * 60 * 60 * 1000; // 1hr
 setInterval(updateStations, stationsUpdateIntervalTime);
@@ -75,8 +94,6 @@ app.use(
     cookie: { secure: false },
   }),
 );
-
-// ################################################################################################
 
 // ################################################################################################
 

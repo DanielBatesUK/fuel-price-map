@@ -1,8 +1,5 @@
 // ################################################################################################
 
-// Imports
-import Database from "better-sqlite3";
-
 // My Imports
 import logTime from "../lib/log_time.js";
 import sleep from "../lib/sleep.js";
@@ -109,7 +106,7 @@ async function populateFuelPrices() {
 
 // ################################################################################################
 
-async function databaseBuild() {
+export default async function databaseBuild() {
   try {
     console.log(`${logTime("databaseBuild")} Database build started...`);
     await applySchema();
@@ -120,4 +117,5 @@ async function databaseBuild() {
     console.error(`${logTime("databaseBuild")} Database build error:`, error);
   }
 }
-databaseBuild();
+
+// ################################################################################################
