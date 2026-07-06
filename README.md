@@ -66,18 +66,6 @@ FUEL_FINDER_API_CLIENT_ID="your_fuel_finder_api_client_id"
 FUEL_FINDER_API_CLIENT_SECRET="your_fuel_finder_api_client_secret"
 ```
 
-### 4. Initialise and build the database
-
-```bash
-npm run db-build
-```
-
-or if using .env in root directory
-
-```bash
-npm run dev-db-build
-```
-
 ### 3. Run the server
 
 ```bash
@@ -89,6 +77,9 @@ or if using .env in root directory
 ```bash
 npm run dev-start
 ```
+
+> [!NOTE]
+> It might take a few minutes for the server to become available on first run. This is due to the database being built and populated with data from the Fuel Finder Public API.
 
 ---
 
