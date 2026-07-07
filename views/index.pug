@@ -5,7 +5,7 @@ html(lang='en')
   body
     div#map
     #about-panel
-      h2 FUEL PRICE MAP
+      img(src="/images/fuelpricemapcouk.svg" class="logo")
       p Displays UK fuel prices using data from the UK Government's #[a(href="https://www.developer.fuel-finder.service.gov.uk/public-api") Fuel Finder Public API]. 
       p Built with: #[br]#[a(href="https://nodejs.org/") Node.js]#[br]#[a(href="https://expressjs.com/") Express]#[br]#[a(href="https://sqlite.org/") SQLite]#[br]#[a(href="https://leafletjs.com/") Leaflet]
       p Webpage by #[a(href="https://danielbates.co.uk") Daniel Bates]
@@ -78,6 +78,15 @@ html(lang='en')
       };
       centredControl.addTo(map);
 
+      // Logo control
+      const logoControl = L.control({ position: "bottomleft" });
+      logoControl.onAdd = function () {
+        const div = L.DomUtil.create("div", "logo-control");
+        div.innerHTML = `<img src="/images/fuelpricemapcouk.svg" alt="Fuel Price Map">`;
+        L.DomEvent.disableClickPropagation(div);
+        return div;
+      };
+      logoControl.addTo(map);
 
       // Update center control state
       function centredControlState(state) {
