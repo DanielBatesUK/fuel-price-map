@@ -65,7 +65,7 @@ try {
 // ################################################################################################
 
 // Update database
-let apiCalls = process.env.FUEL_FINDER_API_CALLS || true;
+let apiCalls = process.env.FUEL_FINDER_API_CALLS || "true";
 if (parseBoolean(apiCalls)) {
   // Stations
   const stationsUpdateIntervalTime = 1 * 60 * 60 * 1000; // 1hr
