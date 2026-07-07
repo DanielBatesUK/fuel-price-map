@@ -83,7 +83,7 @@ npm run dev-start
 ```
 
 > [!NOTE]
-> It might take a few minutes for the server to become available on first run. This is due to the database being built and populated with data from the Fuel Finder Public API.
+> It might take a few minutes for the server to become available on the first run. This is due to the database being built and then populated with data from the Fuel Finder Public API.
 
 ---
 
