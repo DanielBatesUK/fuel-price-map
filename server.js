@@ -30,6 +30,7 @@ import logTime from "./lib/log_time.js";
 import updateStations from "./lib/update_stations.js";
 import databaseInitialised from "./lib/database_initialised.js";
 import databaseBuild from "./scripts/database_build.js";
+import parseBoolean from "./lib/parse_boolean.js";
 
 // ################################################################################################
 
@@ -64,18 +65,22 @@ try {
 // ################################################################################################
 
 // Update database
-// Stations
-const stationsUpdateIntervalTime = 1 * 60 * 60 * 1000; // 1hr
-setInterval(updateStations, stationsUpdateIntervalTime);
-updateStations();
-// Fuel prices (delayed to avoid api conflict with stations)
-const pricesUpdateIntervalTime = 15 * 60 * 1000; // 15mins
-const pricesUpdateDelayTime = 7.5 * 60 * 1000; // 7.5mins
-setTimeout(() => {
-  setInterval(updateFuelPrices, pricesUpdateIntervalTime);
-  updateFuelPrices();
-}, pricesUpdateDelayTime);
-
+let apiCalls = process.env.FUEL_FINDER_API_CALLS || true;
+if (parseBoolean(apiCalls)) {
+  // Stations
+  const stationsUpdateIntervalTime = 1 * 60 * 60 * 1000; // 1hr
+  setInterval(updateStations, stationsUpdateIntervalTime);
+  updateStations();
+  // Fuel prices (delayed to avoid api conflict with stations)
+  const pricesUpdateIntervalTime = 15 * 60 * 1000; // 15mins
+  const pricesUpdateDelayTime = 7.5 * 60 * 1000; // 7.5mins
+  setTimeout(() => {
+    setInterval(updateFuelPrices, pricesUpdateIntervalTime);
+    updateFuelPrices();
+  }, pricesUpdateDelayTime);
+} else {
+  console.log(`${logTime()} Fuel Finder Public API calls disabled`);
+}
 // ################################################################################################
 
 // Express
