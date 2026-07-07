@@ -48,7 +48,8 @@ Fuel Finder uses an OAuth2-style token system:
 
 ## ⚙️ Setup
 
-You must have a client id and client secret for the UK government's Fuel Finder Public API. For more information [look here](https://www.developer.fuel-finder.service.gov.uk/public-api).
+> [!WARNING]
+> You must have a client id and client secret for the UK government's Fuel Finder Public API. For more information [look here](https://www.developer.fuel-finder.service.gov.uk/public-api).
 
 ### 1. Install dependencies
 
