@@ -64,7 +64,11 @@ FUEL_PRICE_MAP_SESSION_SECRET="your_session_secret"
 FUEL_PRICE_MAP_DATABASE_PATH="/path/to/database.db"
 FUEL_FINDER_API_CLIENT_ID="your_fuel_finder_api_client_id"
 FUEL_FINDER_API_CLIENT_SECRET="your_fuel_finder_api_client_secret"
+FUEL_FINDER_API_CALLS=true
 ```
+
+> [!NOTE]
+> Setting FUEL_FINDER_API_CALLS to false turns off incremental station and fuel price updates. As the Fuel Finder Public API gives one set of credentials; this setting comes in handy for development work. If it's not declared it is assumed as "true".
 
 ### 3. Run the server
 
@@ -72,7 +76,7 @@ FUEL_FINDER_API_CLIENT_SECRET="your_fuel_finder_api_client_secret"
 node server.js
 ```
 
-or if using .env in root directory
+or if using .env file in the app's root directory
 
 ```bash
 npm run dev-start
