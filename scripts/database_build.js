@@ -94,7 +94,7 @@ async function populateStations() {
         `${logTime("populateStations")} Populated stations table with data from batch-number:'${batchNumber}'...`,
       );
       // Slow your row on API calls
-      await sleep(5000, true);
+      await sleep(5000, true, "to slow API call rate");
     }
   } catch (error) {
     console.error(`${logTime("populateStations")} Error:`, error.message);
@@ -143,7 +143,7 @@ async function populateFuelPrices() {
       console.log(
         `${logTime("populateFuelPrices")} Populated fuel_prices table with data from batch-number:'${batchNumber}'...`,
       );
-      await sleep(5000, true);
+      await sleep(5000, true, "to slow API call rate");
     }
   } catch (error) {
     console.error(`${logTime("populateFuelPrices")} Error:`, error.message);
