@@ -3,7 +3,7 @@
 // My Imports
 import logTime from "../lib/log_time.js";
 import sleep from "../lib/sleep.js";
-import databaseSchema from "../models/database_schema.js";
+import db from "../lib/database.js";
 import apiStations from "../lib/api_stations.js";
 import apiPrices from "../lib/api_prices.js";
 import saveStation from "../models/save_station.js";
@@ -12,12 +12,12 @@ import saveSyncStatus from "../models/save_sync_status.js";
 
 // ################################################################################################
 
-async function applySchema() {
+async function buildSchema() {
   try {
-    console.log(`${logTime("applySchema")} Database schema build request...`);
+    console.log(`${logTime("buildSchema")} Database schema build request...`);
 
     // Select stations
-    console.log(`${logTime("applySchema")} Applying schema for database...`);
+    console.log(`${logTime("buildSchema")} Applying schema for database...`);
     const stationsResults = db.exec(
       `
         DROP TABLE IF EXISTS sync_status;
@@ -53,11 +53,11 @@ async function applySchema() {
         );
       `,
     );
-    console.log(`${logTime("applySchema")} Completed building database schema`);
+    console.log(`${logTime("buildSchema")} Completed building database schema`);
     // Return results
     return { data: stationsResults };
   } catch (error) {
-    console.error(`${logTime("applySchema")} Database error...`, error.message);
+    console.error(`${logTime("buildSchema")} Database error...`, error.message);
     return Promise.reject(new Error(error.message));
   }
 }
@@ -155,7 +155,7 @@ async function populateFuelPrices() {
 export default async function databaseBuild() {
   try {
     console.log(`${logTime("databaseBuild")} Database build started...`);
-    await applySchema();
+    await buildSchema();
     await populateStations();
     await populateFuelPrices();
     console.log(`${logTime("databaseBuild")} Database build finished.`);
