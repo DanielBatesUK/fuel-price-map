@@ -235,7 +235,7 @@ div.station div.price {
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
   padding: 16px;
   z-index: 1000;
-  transform: translateX(382px);
+  transform: translateX(395px);
   transition: transform 0.25s ease;
 }
 
