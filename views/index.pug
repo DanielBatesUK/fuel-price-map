@@ -22,7 +22,6 @@ html(lang='en')
         [60.9, 1.8]
       ).pad(0.2);
       let keepCentred = true;
-      let centredDisabled = false;
       let programmaticMove = false;
       const stationMarkers = new Map();
       const stationPriceCache = new Map();
@@ -62,6 +61,27 @@ html(lang='en')
       infoControl.addTo(map);
 
 
+      // Update center control state
+      function centredControlState(state) {
+        const div = document.querySelector(
+          '.leaflet-control[title="Keep centred"]'
+        );
+        if (!div) return;
+        if (state === "off") {
+          keepCentred = false;
+          div.classList.remove("on");
+        }
+        if (state === "on") {
+          keepCentred = true;
+          div.classList.add("on");
+        }
+        if (state === "disabled") {
+          keepCentred = false;
+          div.classList.add("disabled");
+        }
+      }
+
+
       // Center control
       const centredControl = L.control({ position: "bottomright" });
       centredControl.onAdd = function () {
@@ -70,7 +90,6 @@ html(lang='en')
         div.title = "Keep centred";
         L.DomEvent.disableClickPropagation(div);
         div.addEventListener("click", () => {
-          keepCentred = true;
           centredControlState("on");
           panMap(cLat, cLng);
         });
@@ -88,17 +107,6 @@ html(lang='en')
       };
       logoControl.addTo(map);
 
-      // Update center control state
-      function centredControlState(state) {
-        const div = document.querySelector(
-          '.leaflet-control[title="Keep centred"]'
-        );
-        if (!div) return;
-        div.classList.remove("on");
-        if (state === "on") div.classList.add("on");
-        if (state === "disabled") div.classList.add("disabled");
-      }
-
 
       // Pan Map
       function panMap(lat, lng) {
@@ -107,15 +115,17 @@ html(lang='en')
       }
 
 
-      // Map move event
-      map.on("moveend", () => {
-        loadStations();
+      // Map move  start event
+      map.on("movestart", () => {
         if (programmaticMove) {
           programmaticMove = false;
           return;
-        }
-        keepCentred = false;
-        centredControlState("off");
+        }    
+         centredControlState("off");
+      });
+      // Map move end event
+      map.on("moveend", () => {
+        loadStations();
       });
 
 
@@ -123,7 +133,6 @@ html(lang='en')
       let locationMarker = null;
       function startLocationTracking() {
         if (!navigator.geolocation) {
-          centredDisabled = true;
           centredControlState("disabled");
           return;
         }
@@ -136,12 +145,11 @@ html(lang='en')
             } else {
               locationMarker.setLatLng([cLat, cLng]);
             }
-            if (keepCentred && !centredDisabled) {
+            if (keepCentred) {
               panMap(cLat, cLng);
             }
           },
           (error) => {
-            centredDisabled = true;
             centredControlState("disabled");
             console.warn("Geolocation error:", error);
           },
