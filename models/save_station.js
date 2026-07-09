@@ -8,7 +8,7 @@ import db from "../lib/database.js";
 
 export default async function saveStation(station) {
   try {
-    console.log(`${logTime("saveStation")} Database 'saveStation' request for '${station.node_id}'...`);
+    console.log(`${logTime("saveStation")} Database 'saveStation' request for node_id:'${station.node_id}'...`);
     // Add or Update Station
     db.prepare(
       `

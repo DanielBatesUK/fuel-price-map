@@ -9,7 +9,7 @@ import db from "../lib/database.js";
 export default async function saveFuelPrice(price) {
   try {
     console.log(
-      `${logTime("saveFuelPrice")} Database 'saveFuelPrice' request for type '${price.fuel_type}' for '${price.node_id}'...`,
+      `${logTime("saveFuelPrice")} Database 'saveFuelPrice' request for fuel_type:'${price.fuel_type}' for node_id:'${price.node_id}'...`,
     );
     // Add or Update fuel price
     db.prepare(

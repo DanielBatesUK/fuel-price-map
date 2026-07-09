@@ -8,7 +8,7 @@ import db from "../lib/database.js";
 
 export default async function saveSyncStatus(tableName, batchNumber) {
   try {
-    console.log(`${logTime("saveSyncStatus")} Database 'sync_status' request for '${tableName}'...`);
+    console.log(`${logTime("saveSyncStatus")} Database 'sync_status' request for table:'${tableName}'...`);
     // Add or Update
     db.prepare(
       `
