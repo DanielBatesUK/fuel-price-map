@@ -13,7 +13,26 @@ export default async function getStations(reqId, north, east, south, west) {
     // Select stations
     console.log(`${logTime(reqId)} Querying database for stations...`);
     const stationsResults = db
-      .prepare(`SELECT * FROM stations WHERE latitude <= ? AND latitude >= ? AND longitude <= ? AND longitude >= ?`)
+      .prepare(
+        `
+          SELECT
+            node_id,
+            brand_name,
+            address_line_1,
+            city,
+            postcode,
+            latitude,
+            longitude,
+            temporary_closure
+          FROM
+            stations
+          WHERE
+            latitude <= ?
+            AND latitude >= ?
+            AND longitude <= ?
+            AND longitude >= ?
+        `,
+      )
       .all(north, south, east, west);
     console.log(`${logTime(reqId)} Query returned data for ${stationsResults.length} station(s)...`);
     // Return results

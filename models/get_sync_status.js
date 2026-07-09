@@ -11,9 +11,23 @@ export default async function getSyncStatus(reqId, tableName) {
     console.log(`${logTime(reqId)} Database 'sync_status' data SELECT request...`);
 
     // Select sync status
-    console.log(`${logTime(reqId)} Querying database for sync_status of '${tableName}'...`);
-    const syncStatusResults = db.prepare(`SELECT * FROM sync_status WHERE name=?`).all(tableName);
-    console.log(`${logTime(reqId)} Query returned sync_status data for ${syncStatusResults.length} table(s)...`);
+    console.log(`${logTime(reqId)} Querying database for sync_status of table:'${tableName}'...`);
+    const syncStatusResults = db
+      .prepare(
+        `
+          SELECT
+            name,
+            last_update,
+          FROM
+            sync_status
+          WHERE
+            name = ?
+        `,
+      )
+      .all(tableName);
+    console.log(
+      `${logTime(reqId)} Query returned sync_status data for ${syncStatusResults.length} table(s) for table:'${tableName}'...`,
+    );
     // Return results
     return { data: syncStatusResults };
   } catch (error) {

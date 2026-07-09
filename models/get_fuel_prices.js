@@ -10,9 +10,24 @@ export default async function getFuelPrices(reqId, node_id) {
   try {
     console.log(`${logTime(reqId)} Database 'prices' data SELECT request...`);
     // Select prices for stations
-    console.log(`${logTime(reqId)} Querying database for fuel prices for '${node_id}'...`);
-    const fuelTypeResults = db.prepare(`SELECT * FROM fuel_prices WHERE node_id=?`).all(node_id);
-    console.log(`${logTime(reqId)} Query returned data for ${fuelTypeResults.length} fuel type(s)...`);
+    console.log(`${logTime(reqId)} Querying database for fuel prices for node_id:'${node_id}'...`);
+    const fuelTypeResults = db
+      .prepare(
+        `
+          SELECT
+            node_id,
+            fuel_type,
+            price
+          FROM
+            fuel_prices
+          WHERE
+            node_id = ?
+        `,
+      )
+      .all(node_id);
+    console.log(
+      `${logTime(reqId)} Query returned data for ${fuelTypeResults.length} fuel type(s) for node_id'${node_id}'...`,
+    );
     fuelTypeResults.fuel_prices = fuelTypeResults.map((fuel) => ({
       fuel_type: fuel.fuel_type,
       price: fuel.price,
