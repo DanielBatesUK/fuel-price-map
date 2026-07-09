@@ -17,7 +17,7 @@ export default async function getSyncStatus(reqId, tableName) {
         `
           SELECT
             name,
-            last_update
+            last_updated
           FROM
             sync_status
           WHERE
