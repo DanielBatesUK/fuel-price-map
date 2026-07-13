@@ -26,18 +26,20 @@ import cookieParser from "cookie-parser";
 import { v4 as uuidV4 } from "uuid";
 
 // My Imports
-import logTime from "./lib/log_time.js";
-import updateStations from "./lib/update_stations.js";
-import databaseInitialised from "./lib/database_initialised.js";
-import databaseBuild from "./scripts/database_build.js";
-import parseBoolean from "./lib/parse_boolean.js";
+import logTime from "./utils/log_time.js";
+import syncStations from "./fuel-finder/sync_stations.js";
+import syncFuelPrices from "./fuel-finder/sync_fuel_prices.js";
+import databaseInitialised from "./database/initialised.js";
+import databaseBuild from "./database/build.js";
+import databaseSchemaVersion from "./database/schema_version.js";
+import databaseMigrate from "./database/migrate.js";
+import parseBoolean from "./utils/parse_boolean.js";
 
 // ################################################################################################
 
 // Routes
 import routeIndex from "./routes/index.js";
 import routeAPI from "./routes/api.js";
-import updateFuelPrices from "./lib/update_fuel_prices.js";
 
 // ################################################################################################
 
@@ -51,7 +53,7 @@ if (process.DEBUGPORT) console.log(`${logTime()} Debug on port ${process.DEBUGPO
 let dbInit;
 try {
   console.log(`${logTime("databaseCheck")} Checking database...`);
-  dbInit = databaseInitialised();
+  dbInit = await databaseInitialised();
   console.log(`${logTime("databaseCheck")} Database initialised: ${dbInit}`);
   if (!dbInit) {
     console.log(`${logTime("databaseCheck")} Running database build...`);
@@ -64,23 +66,35 @@ try {
 
 // ################################################################################################
 
-// Update database
-let apiCalls = process.env.FUEL_FINDER_API_CALLS || "true";
+// Database schema version
+const DATABASE_SCHEMA_VERSION = 2;
+const currentSchemaVersion = await databaseSchemaVersion();
+// Check database schema version used
+if (currentSchemaVersion < DATABASE_SCHEMA_VERSION) {
+  // Migrate database to new version
+  await databaseMigrate(currentSchemaVersion);
+}
+
+// ################################################################################################
+
+// Incrementally sync stations and fuel_prices tables
+const apiCalls = process.env.FUEL_FINDER_API_CALLS || "true";
 if (parseBoolean(apiCalls)) {
   // Stations
-  const stationsUpdateIntervalTime = 1 * 60 * 60 * 1000; // 1hr
-  setInterval(updateStations, stationsUpdateIntervalTime);
-  updateStations();
+  const syncStationsInterval = 1 * 60 * 60 * 1000; // 1hr
+  setInterval(syncStations, syncStationsInterval);
+  syncStations();
   // Fuel prices (delayed to avoid api conflict with stations)
-  const pricesUpdateIntervalTime = 15 * 60 * 1000; // 15mins
-  const pricesUpdateDelayTime = 7.5 * 60 * 1000; // 7.5mins
+  const syncFuelPricesInterval = 15 * 60 * 1000; // 15mins
+  const syncFuelPricesDelay = 7.5 * 60 * 1000; // 7.5mins
   setTimeout(() => {
-    setInterval(updateFuelPrices, pricesUpdateIntervalTime);
-    updateFuelPrices();
-  }, pricesUpdateDelayTime);
+    setInterval(syncFuelPrices, syncFuelPricesInterval);
+    syncFuelPrices();
+  }, syncFuelPricesDelay);
 } else {
   console.log(`${logTime()} Fuel Finder Public API calls disabled`);
 }
+
 // ################################################################################################
 
 // Express

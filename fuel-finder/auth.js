@@ -1,14 +1,14 @@
 // ################################################################################################
 
 // My Imports
-import logTime from "./log_time.js";
-import httpRequest from "./http_request.js";
+import logTime from "../utils/log_time.js";
+import httpRequest from "../utils/http_request.js";
 
 // ################################################################################################
 
 // Tokens
-var accessToken = { token: null, expires: null };
-var refreshToken = { token: null, expires: null };
+let accessToken = { token: null, expires: null };
+let refreshToken = { token: null, expires: null };
 let tokenPromise = null;
 
 // Expiry time

@@ -3,7 +3,8 @@
 .vscode/
 *eslint*
 *prettier*
-/database
+#/database
+*.db
 /storage
 .env.*
 *nodemon*

@@ -1,13 +1,13 @@
 // ################################################################################################
 
 // My Imports
-import logTime from "./log_time.js";
-import httpRequest from "./http_request.js";
-import getToken from "./api_access_token.js";
+import logTime from "../utils/log_time.js";
+import httpRequest from "../utils/http_request.js";
+import getToken from "./auth.js";
 
 // ################################################################################################
 
-export default async function apiFuelFinderRequest(url, batchNumber, timeStamp) {
+export default async function apiRequest(url, batchNumber, timestamp) {
   try {
     // Get access token
     let accessToken = await getToken();
@@ -20,8 +20,8 @@ export default async function apiFuelFinderRequest(url, batchNumber, timeStamp) 
       },
       searchParams: {
         "batch-number": batchNumber,
-        ...(timeStamp !== null && {
-          "effective-start-timestamp": timeStamp,
+        ...(timestamp !== null && {
+          "effective-start-timestamp": timestamp,
         }),
       },
     };
@@ -29,8 +29,9 @@ export default async function apiFuelFinderRequest(url, batchNumber, timeStamp) 
     let response = await httpRequest(url, options, "apiFuelFinderRequest", [200, 404, 403]);
     // Access token rejected
     if (response.statusCode === 403) {
-      console.warn(`${logTime("apiFuelFinderRequest")} Access token rejected, regenerating...`);
+      console.warn(`${logTime("apiFuelFinderRequest")} Access token rejected, attempting to regenerate...`);
       accessToken = await getToken(true);
+      // Try again
       options.headers.Authorization = `Bearer ${accessToken}`;
       response = await httpRequest(url, options, "apiFuelFinderRequest", [200, 404]);
     }

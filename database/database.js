@@ -1,13 +1,17 @@
 // ################################################################################################
 
 // Imports
-// none
+import Database from "better-sqlite3";
+import logTime from "../utils/log_time.js";
 
 // ################################################################################################
 
-export default function parseBoolean(value) {
-  if (typeof value !== "string") return false;
-  return ["true", "1", "yes", "on"].includes(value.trim().toLowerCase());
-}
+const db = new Database(process.env.FUEL_PRICE_MAP_DATABASE_PATH);
+console.log(
+  `${logTime("database")} Database connected - SQLite:`,
+  db.prepare("SELECT sqlite_version() AS version").get(),
+);
 
 // ################################################################################################
+
+export default db;

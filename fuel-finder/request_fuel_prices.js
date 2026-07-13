@@ -1,13 +1,13 @@
 // ################################################################################################
 
-// Imports
-// none
+// My Imports
+import apiRequest from "./api_request.js";
 
 // ################################################################################################
 
-export default function sleep(ms, logOutput = false, reason = "") {
-  if (logOutput) console.log(`Zzzzz for ${ms} milliseconds${reason !== "" ? ` ${reason}` : ""}...`);
-  return new Promise((resolve) => setTimeout(resolve, ms));
+export default function requestFuelPrices(batchNumber = 1, timestamp = null) {
+  const url = `https://www.fuel-finder.service.gov.uk/api/v1/pfs/fuel-prices`;
+  return apiRequest(url, batchNumber, timestamp);
 }
 
 // ################################################################################################

@@ -1,13 +1,13 @@
 // ################################################################################################
 
 // My Imports
-import apiFuelFinderRequest from "./api_fuel_finder_request.js";
+import apiRequest from "./api_request.js";
 
 // ################################################################################################
 
-export default function apiPrices(batchNumber = 1, timeStamp = null) {
-  const url = `https://www.fuel-finder.service.gov.uk/api/v1/pfs/fuel-prices`;
-  return apiFuelFinderRequest(url, batchNumber, timeStamp);
+export default function requestStations(batchNumber = 1, timestamp = null) {
+  const url = `https://www.fuel-finder.service.gov.uk/api/v1/pfs`;
+  return apiRequest(url, batchNumber, timestamp);
 }
 
 // ################################################################################################
