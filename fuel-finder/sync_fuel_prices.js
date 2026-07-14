@@ -5,6 +5,7 @@ import logTime from "../utils/log_time.js";
 import sleep from "../utils/sleep.js";
 import formatFuelFinderTimestamp from "./format_timestamp.js";
 import requestFuelPrices from "./request_fuel_prices.js";
+import db from "../database/database.js";
 import { saveFuelPrice } from "../models/fuel_prices.js";
 import { saveTotalFuelPrices } from "../models/metadata.js";
 import { getSyncStatusForTable, saveSyncStatus } from "../models/sync_status.js";
@@ -45,18 +46,22 @@ export default async function syncFuelPrices(fullSync = false) {
         );
         break;
       }
-      for (const station of stations) {
-        for (const fuel of station.fuel_prices) {
-          const fuelPrice = {
-            node_id: station.node_id,
-            fuel_type: fuel.fuel_type,
-            price: fuel.price,
-            price_last_updated: fuel.price_last_updated,
-            price_change_effective_timestamp: fuel.price_change_effective_timestamp,
-          };
-          await saveFuelPrice("syncFuelPrices", fuelPrice);
+      // Update fuel_prices
+      const transaction = db.transaction(() => {
+        for (const station of stations) {
+          for (const fuel of station.fuel_prices) {
+            const fuelPrice = {
+              node_id: station.node_id,
+              fuel_type: fuel.fuel_type,
+              price: fuel.price,
+              price_last_updated: fuel.price_last_updated,
+              price_change_effective_timestamp: fuel.price_change_effective_timestamp,
+            };
+            saveFuelPrice("syncFuelPrices", fuelPrice);
+          }
         }
-      }
+      });
+      transaction();
       // Update sync status
       await saveSyncStatus("syncFuelPrices", "fuel_prices", batchNumber);
       // Update metadata

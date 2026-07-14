@@ -5,6 +5,7 @@ import logTime from "../utils/log_time.js";
 import sleep from "../utils/sleep.js";
 import formatFuelFinderTimestamp from "./format_timestamp.js";
 import requestStations from "./request_stations.js";
+import db from "../database/database.js";
 import { saveStation } from "../models/stations.js";
 import { saveTotalStations } from "../models/metadata.js";
 import { getSyncStatusForTable, saveSyncStatus } from "../models/sync_status.js";
@@ -48,38 +49,42 @@ export default async function syncStations(fullSync = false) {
         );
         break;
       }
-      for (const station of stations) {
-        // Save station
-        await saveStation("syncStations", station);
-        // Save station amenities
-        for (const amenity of station.amenities) {
-          await saveAmenityForStation("syncStations", { node_id: station.node_id, amenity: amenity });
-        }
-        // Save station usual opening times
-        for (const usualDay of Object.entries(station.opening_times.usual_days)) {
-          await saveOpeningTimeForStation("syncStations", {
+      // Update stations
+      const transaction = db.transaction(() => {
+        for (const station of stations) {
+          // Save station
+          saveStation("syncStations", station);
+          // Save station amenities
+          for (const amenity of station.amenities) {
+            saveAmenityForStation("syncStations", { node_id: station.node_id, amenity: amenity });
+          }
+          // Save station usual opening times
+          for (const usualDay of Object.entries(station.opening_times.usual_days)) {
+            saveOpeningTimeForStation("syncStations", {
+              node_id: station.node_id,
+              day_name: usualDay[0],
+              holiday_type: null,
+              opens: usualDay[1].open,
+              closes: usualDay[1].close,
+              is_24_hours: usualDay[1].is_24_hours,
+            });
+          }
+          // Save station bank holiday opening times
+          saveOpeningTimeForStation("syncStations", {
             node_id: station.node_id,
-            day_name: usualDay[0],
-            holiday_type: null,
-            opens: usualDay[1].open,
-            closes: usualDay[1].close,
-            is_24_hours: usualDay[1].is_24_hours,
+            day_name: "bank_holiday",
+            holiday_type: station.opening_times.bank_holiday.type,
+            opens: station.opening_times.bank_holiday.open_time,
+            closes: station.opening_times.bank_holiday.close_time,
+            is_24_hours: station.opening_times.bank_holiday.is_24_hours,
           });
+          // Save station fuel types
+          for (const fuelType of station.fuel_types) {
+            saveFuelTypeForStation("syncStations", { node_id: station.node_id, fuel_type: fuelType });
+          }
         }
-        // Save station bank holiday opening times
-        await saveOpeningTimeForStation("syncStations", {
-          node_id: station.node_id,
-          day_name: "bank_holiday",
-          holiday_type: station.opening_times.bank_holiday.type,
-          opens: station.opening_times.bank_holiday.open_time,
-          closes: station.opening_times.bank_holiday.close_time,
-          is_24_hours: station.opening_times.bank_holiday.is_24_hours,
-        });
-        // Save station fuel types
-        for (const fuelType of station.fuel_types) {
-          await saveFuelTypeForStation("syncStations", { node_id: station.node_id, fuel_type: fuelType });
-        }
-      }
+      });
+      transaction();
       // Update sync status
       await saveSyncStatus("syncStations", "stations", batchNumber);
       // Update metadata
