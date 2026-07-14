@@ -67,7 +67,7 @@ try {
 // ################################################################################################
 
 // Database schema version
-const DATABASE_SCHEMA_VERSION = 2;
+const DATABASE_SCHEMA_VERSION = 3;
 const currentSchemaVersion = await databaseSchemaVersion();
 // Check database schema version used
 if (currentSchemaVersion < DATABASE_SCHEMA_VERSION) {
