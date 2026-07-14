@@ -2,6 +2,12 @@
 
 -- ################################################################################################
 
+PRAGMA foreign_keys = OFF;
+
+BEGIN TRANSACTION;
+
+-- ################################################################################################
+
 -- Drop tables
 DROP TABLE IF EXISTS sync_status;
 DROP TABLE IF EXISTS fuel_prices;
@@ -37,3 +43,11 @@ CREATE TABLE fuel_prices (
   PRIMARY KEY (node_id, fuel_type),
   FOREIGN KEY (node_id) REFERENCES stations(node_id)
 );
+
+-- ################################################################################################
+
+COMMIT;
+
+PRAGMA foreign_keys = ON;
+
+PRAGMA foreign_key_check;

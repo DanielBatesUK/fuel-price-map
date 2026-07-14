@@ -1,4 +1,10 @@
--- Build database from scratch schema v2
+-- Build database from scratch with schema v3
+
+-- ################################################################################################
+
+PRAGMA foreign_keys = OFF;
+
+BEGIN TRANSACTION;
 
 -- ################################################################################################
 
@@ -6,6 +12,9 @@
 DROP TABLE IF EXISTS metadata;
 DROP TABLE IF EXISTS sync_status;
 DROP TABLE IF EXISTS fuel_prices;
+DROP TABLE IF EXISTS fuel_types;
+DROP TABLE IF EXISTS opening_times;
+DROP TABLE IF EXISTS amenities;
 DROP TABLE IF EXISTS stations;
 
 -- ################################################################################################
@@ -41,7 +50,32 @@ CREATE TABLE fuel_prices (
   price_last_updated DATETIME,
   price_change_effective_timestamp DATETIME,
   PRIMARY KEY (node_id, fuel_type),
-  FOREIGN KEY (node_id) REFERENCES stations(node_id)
+  FOREIGN KEY (node_id) REFERENCES stations(node_id) ON DELETE CASCADE
+);
+
+CREATE TABLE fuel_types (
+  node_id TEXT NOT NULL,
+  fuel_type TEXT NOT NULL,
+  PRIMARY KEY (node_id, fuel_type),
+  FOREIGN KEY (node_id) REFERENCES stations(node_id) ON DELETE CASCADE
+);
+
+CREATE TABLE opening_times (
+  node_id TEXT NOT NULL,
+  day_name TEXT NOT NULL,
+  holiday_type TEXT DEFAULT NULL,
+  opens TEXT NOT NULL,
+  closes TEXT NOT NULL,
+  is_24_hours BOOLEAN DEFAULT 0,
+  PRIMARY KEY (node_id, day_name),
+  FOREIGN KEY (node_id) REFERENCES stations(node_id) ON DELETE CASCADE
+);
+
+CREATE TABLE amenities (
+  node_id TEXT NOT NULL,
+  amenity TEXT NOT NULL,
+  PRIMARY KEY (node_id, amenity),
+  FOREIGN KEY (node_id) REFERENCES stations(node_id) ON DELETE CASCADE
 );
 
 -- ################################################################################################
@@ -60,3 +94,11 @@ FROM fuel_prices;
 
 INSERT INTO metadata (name, value)
 VALUES ('database_created', CURRENT_TIMESTAMP);
+
+-- ################################################################################################
+
+COMMIT;
+
+PRAGMA foreign_keys = ON;
+
+PRAGMA foreign_key_check;

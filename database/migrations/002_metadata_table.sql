@@ -2,6 +2,12 @@
 
 -- ################################################################################################
 
+PRAGMA foreign_keys = OFF;
+
+BEGIN TRANSACTION;
+
+-- ################################################################################################
+
 -- Drop tables
 DROP TABLE IF EXISTS metadata;
 
@@ -29,3 +35,11 @@ FROM fuel_prices;
 
 INSERT INTO metadata (name, value)
 VALUES ('database_created', CURRENT_TIMESTAMP);
+
+-- ################################################################################################
+
+COMMIT;
+
+PRAGMA foreign_keys = ON;
+
+PRAGMA foreign_key_check;
