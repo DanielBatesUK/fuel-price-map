@@ -20,16 +20,16 @@
     "cookie-parser": "^1.4.7",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
-    "got": "^15.0.5",
-    "multer": "2.2.0",
+    "got": "^15.1.0",
+    "multer": "^2.2.0",
     "pug": "^3.0.4",
-    "uuid": "^14.0.0"
+    "uuid": "^14.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "eslint": "^10.1.0",
+    "eslint": "^10.7.0",
     "eslint-config-prettier": "^10.1.8",
-    "globals": "^17.4.0",
-    "prettier": "3.9.4"
+    "globals": "^17.7.0",
+    "prettier": "3.9.5"
   }
 }
