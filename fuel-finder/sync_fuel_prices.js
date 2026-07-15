@@ -5,10 +5,8 @@ import logTime from "../utils/log_time.js";
 import sleep from "../utils/sleep.js";
 import formatFuelFinderTimestamp from "./format_timestamp.js";
 import requestFuelPrices from "./request_fuel_prices.js";
-import db from "../database/database.js";
-import { saveFuelPrice } from "../models/fuel_prices.js";
-import { saveTotalFuelPrices } from "../models/metadata.js";
-import { getSyncStatusForTable, saveSyncStatus } from "../models/sync_status.js";
+import { getSyncStatusForTable } from "../models/sync_status.js";
+import transactionFuelPricesBatch from "../database/transactions/fuel_prices_batch.js";
 
 // ################################################################################################
 
@@ -27,6 +25,8 @@ export default async function syncFuelPrices(fullSync = false) {
     while (true) {
       // Next batch number
       batchNumber += 1;
+      // Slow your row on API calls
+      await sleep("syncFuelPrices", 5000, true, "Slowing API call rate");
       // API request
       console.log(
         `${logTime("syncFuelPrices")} Sending request to fuel_prices api for batch-number:'${batchNumber}' timestamp:'${timestamp}'...`,
@@ -46,32 +46,12 @@ export default async function syncFuelPrices(fullSync = false) {
         );
         break;
       }
-      // Update fuel_prices
-      const transaction = db.transaction(() => {
-        for (const station of stations) {
-          for (const fuel of station.fuel_prices) {
-            const fuelPrice = {
-              node_id: station.node_id,
-              fuel_type: fuel.fuel_type,
-              price: fuel.price,
-              price_last_updated: fuel.price_last_updated,
-              price_change_effective_timestamp: fuel.price_change_effective_timestamp,
-            };
-            saveFuelPrice("syncFuelPrices", fuelPrice);
-          }
-        }
-      });
-      transaction();
-      // Update sync status
-      await saveSyncStatus("syncFuelPrices", "fuel_prices", batchNumber);
-      // Update metadata
-      saveTotalFuelPrices("syncFuelPrices");
+      // Save batch via database transaction
+      transactionFuelPricesBatch(stations, batchNumber);
       // Done
       console.log(
         `${logTime("syncFuelPrices")} Synced fuel_prices data to database from batch-number:'${batchNumber}' timestamp:'${timestamp}'...`,
       );
-      // Slow your row on API calls
-      await sleep(5000, true, "to slow API call rate");
     }
     console.log(`${logTime("syncFuelPrices")} Sync fuel_prices completed`);
   } catch (error) {
